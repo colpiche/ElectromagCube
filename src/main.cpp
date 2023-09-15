@@ -209,11 +209,21 @@ void operateServo(String command) {
 
 void operateFan(String command) {
   Serial.println("Fan operation");
-  String speedCode = parseCommand(command, Speed);
-  int speed = speedCode.toInt();
-  Serial.println("Speed : " + String(speed));
-  speed = map(speed, FAN_MIN_SPEED, FAN_MAX_SPEED, 0, 255);
-  analogWrite(FAN_PIN, speed);
+  String instructionCode = parseCommand(command, Instruction);
+  
+  if (instructionCode == "0") {
+    Serial.println("Stopping fan");
+    analogWrite(FAN_PIN, 0);
+  } else if (instructionCode == "1") {
+    Serial.println("Activating fan");
+    String speedCode = parseCommand(command, Speed);
+    int speed = speedCode.toInt();
+    Serial.println("Speed : " + String(speed));
+    speed = map(speed, FAN_MIN_SPEED, FAN_MAX_SPEED, 0, 255);
+    analogWrite(FAN_PIN, speed);
+  } else{
+    Serial.println("Wrong instruction code");
+  }
 }
 
 
@@ -318,9 +328,6 @@ void updateServos() {
 
 void loop()
 {
-  updateServos();
-  audioHook();
-
   if (Serial.available()) {
     String command = Serial.readString();
     command.trim();
@@ -328,4 +335,6 @@ void loop()
     parseComponent(command);
   }
 
+  updateServos();
+  audioHook();
 }
