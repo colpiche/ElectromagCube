@@ -22,7 +22,8 @@ enum CommandWords {
   Instruction,
   Speed,
   Waveform,
-  Rythm
+  RythmPeriod,
+  RythmDutyCycle
 };
 
 enum class Components {T, S, F};
@@ -36,7 +37,7 @@ enum class Waveforms {S, C, T, I, N};
 #include <MozziGuts.h>
 #include <Oscil.h>
 #include <tables/sin2048_int8.h>
-#include <tables/square_no_alias_2048_int8.h>
+#include <tables/square_analogue512_int8.h>
 #include <tables/triangle_warm8192_int8.h>
 #include <tables/saw2048_int8.h>
 #include <tables/brownnoise8192_int8.h>
@@ -44,7 +45,7 @@ enum class Waveforms {S, C, T, I, N};
 
 // use: Oscil <table_size, update_rate> oscilName (wavetable), look in .h file of table #included above
 Oscil <SIN2048_NUM_CELLS, AUDIO_RATE> aSine(SIN2048_DATA);
-Oscil <SQUARE_NO_ALIAS_2048_NUM_CELLS, AUDIO_RATE> aSquare(SQUARE_NO_ALIAS_2048_DATA);
+Oscil <SQUARE_ANALOGUE512_NUM_CELLS, AUDIO_RATE> aSquare(SQUARE_ANALOGUE512_DATA);
 Oscil <TRIANGLE_WARM8192_NUM_CELLS, AUDIO_RATE> aTriangle(TRIANGLE_WARM8192_DATA);
 Oscil <SAW2048_NUM_CELLS, AUDIO_RATE> aSaw(SAW2048_DATA);
 Oscil <BROWNNOISE8192_NUM_CELLS, AUDIO_RATE> aNoise(BROWNNOISE8192_DATA);
@@ -65,7 +66,7 @@ String waveformCode = "S";
 #define servo5_PIN SHIELD_O5
 #define SERVO_MIN_POS 65
 #define SERVO_MAX_POS 180
-#define SERVO_MIN_INTERVAL 10
+#define SERVO_MIN_INTERVAL 5
 #define SERVO_MAX_INTERVAL 200
 Servo servo3;
 Servo servo4;
@@ -123,9 +124,13 @@ String parseCommand(String command, CommandWords commandWord) {
       firstCharIndex = 12;
       lastCharIndex = 13;
       break;
-    case Rythm:
+    case RythmPeriod:
       firstCharIndex = 14;
-      lastCharIndex = 19;
+      lastCharIndex = 18;
+      break;
+    case RythmDutyCycle:
+      firstCharIndex = 19;
+      lastCharIndex = 22;
       break;
   }
 
@@ -253,13 +258,13 @@ AudioOutput_t updateAudio(){
   if (waveformCode == "S") {
       return MonoOutput::from8Bit(aSine.next()); // 8 bit * 8 bit gives 16 bits value
     } else if (waveformCode == "C") {
-      return MonoOutput::from16Bit(aSquare.next());
+      return MonoOutput::from8Bit(aSquare.next());
     } else if (waveformCode == "T") {
-      return MonoOutput::from16Bit(aTriangle.next());
+      return MonoOutput::from8Bit(aTriangle.next());
     } else if (waveformCode == "I") {
-      return MonoOutput::from16Bit(aSaw.next());
+      return MonoOutput::from8Bit(aSaw.next());
     } else if (waveformCode == "N") {
-      return MonoOutput::from16Bit(aNoise.next());
+      return MonoOutput::from8Bit(aNoise.next());
     } else {
       Serial.println("Wrong waveform code");
       return;
